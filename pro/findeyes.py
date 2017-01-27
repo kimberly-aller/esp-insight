@@ -4,6 +4,7 @@ import pdb
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import math
+from PIL import Image
 
 def idface(imgname, nofacefind):
     """
@@ -27,7 +28,6 @@ def idface(imgname, nofacefind):
     eyeSF = 1.01 # eye ScaleFactor
     eyeMN = 2 # eye MinNeighbors
     
-    
     # Getting the Haar-cascade from OpenCV
     haarface = '/home/kikimei/Insight/esp/opencv/data/haarcascades/haarcascade_frontalface_default.xml'
     haareye = '/home/kikimei/Insight/esp/opencv/data/haarcascades/haarcascade_eye.xml'
@@ -39,7 +39,13 @@ def idface(imgname, nofacefind):
     leye_cascade = cv2.CascadeClassifier(haareyel)
     reye_cascade = cv2.CascadeClassifier(haareyer)
 
-    img0 = cv2.imread(imgname)
+    if ('.jpg' in imgname) | ('.png' in imgname):
+        img0 = cv2.imread(imgname)
+    else:
+        img0 = Image.open(imgname)
+        img0 = img0.convert(mode='RGB')
+        img0 = np.asarray(img0)
+
     imgw = (img0.shape)[0]
     imgh = (img0.shape)[1]
 
@@ -102,7 +108,7 @@ def idface(imgname, nofacefind):
 
         # Eyes can't be larger than 50% of face or less than 10%
         mineye = int(round(h*0.1))
-        maxeye = int(round(h*0.5))
+        maxeye = int(round(h*0.4))
         
         #pdb.set_trace()
         #cv2.rectangle(img0,(x1,y1),(x2,y2),(255,0,0),4)

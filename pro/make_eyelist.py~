@@ -1,0 +1,37 @@
+def make_eyelist(infile):
+
+    # List of eyes open
+    openeye = 'EyeCoordinatesInfo_OpenFace.txt'
+    openeye_out = 'openeyes_list.txt'
+
+    # List of eyes closed
+    closedeye = 'EyeCoordinatesInfo_ClosedFace.txt'
+    closedeye_out = 'closedeyes_list.txt'
+
+    # Reserve 20% for testing the method later
+    usefraction = 0.8
+
+    # Begin reading each image list and constructing the final training lists
+    openlist = np.genfromtxt(openeye, dtype=None)
+    closedlist = np.genfromtxt(closedeye, dtype=None)
+    
+    outopen = open(openeye_out, 'w')
+    outclosed = open(closedeye_out, 'w')
+
+    nopen = len(openlist)
+    nclosed = len(closedlist)
+
+    nopen_res = round(nopen*usefraction)
+    nclosed_res = round(nopen*usefraction)
+
+    for openname in openlist:
+        outopen.write(openname[0])
+
+    outopen.close()
+
+    for closedname in closedlist:
+        outclosed.write(closedname[0])
+
+    outclosed.close()
+    
+    
