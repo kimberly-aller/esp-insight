@@ -18,6 +18,9 @@ from keras.layers import Activation, Dropout, Flatten, Dense
 import pdb
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(127)
 
 #Setup image parameters
 img_width = 24
@@ -29,7 +32,7 @@ train_data_dir = '/home/kikimei/Insight/esp/data/train'
 validation_data_dir = '/home/kikimei/Insight/esp/data/validation'
 nb_train_samples = 3940 #1970 total training samples
 nb_val_samples = 906 #400 total samples
-nb_epoch = 15
+nb_epoch = 9
 
 # Get Training Data
 xtrain = np.load('../openclosed_train_nn.dat.npy')
@@ -48,7 +51,7 @@ yvalid = np.load('../openclosed_class_val_nn.dat.npy')
 
 model = Sequential()
 #remove border_mode=same
-model.add(Convolution2D(32,3, 3, border_mode='same',
+model.add(Convolution2D(32, 3, 3, border_mode='same',
                         input_shape=(img_width, img_height,3)))
 model.add(Activation('relu'))
 # 24 -> 12
@@ -60,9 +63,9 @@ model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2,2), border_mode='same'))
 
 #6 --> 3
-#model.add(Convolution2D(32,3,3, border_mode='same'))
-#model.add(Activation('relu'))
-#model.add(MaxPooling2D(pool_size=(2,2), border_mode='same'))
+model.add(Convolution2D(32,3,3, border_mode='same'))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2,2), border_mode='same'))
 
 # 3 -> 1
 #model.add(Convolution2D(32,3,3, border_mode='same'))
@@ -79,7 +82,7 @@ model.add(Activation('sigmoid'))
 
 #pdb.set_trace()
 model.compile(loss='binary_crossentropy',
-              optimizer='sgd',
+              optimizer='adam',
               metrics=['accuracy'])
 
 #Augmenting the training dataset by doing image transformations on the
@@ -133,11 +136,10 @@ with open("nn_model_20epochs.json", "w") as json_file:
 
 score = model.evaluate(xvalid, yvalid)
 
-print('accuracy: %d%%' % score[1])
+print('accuracy: %.2f%%' % score[1]*100)
 
 test = np.zeros((1,24,24,3))
 test[0] = xvalid[0]
-pdb.set_trace()
 
 model.predict(test)
 

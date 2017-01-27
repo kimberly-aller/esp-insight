@@ -108,7 +108,7 @@ def idface(imgname, nofacefind):
 
         # Eyes can't be larger than 50% of face or less than 10%
         mineye = int(round(h*0.1))
-        maxeye = int(round(h*0.4))
+        maxeye = int(round(h*0.3))
         
         #pdb.set_trace()
         #cv2.rectangle(img0,(x1,y1),(x2,y2),(255,0,0),4)
@@ -150,15 +150,38 @@ def idface(imgname, nofacefind):
             idl = []
         if (len(reyes) >= 1):
             idr = np.where((reyes[:,1] < (roi_gray.shape)[1]*feye) &
+                           (reyes[:,0] < (roi_gray.shape)[0]*feye) &
                            (reyes[:,1] > (roi_gray.shape)[1]*feyetrim))
+            
         if (len(leyes) >= 1):
             idl = np.where((leyes[:,1] < (roi_gray.shape)[1]*feye) &
+                           (leyes[:,0] > (roi_gray.shape)[0]*feye) &
                            (leyes[:,1] > (roi_gray.shape)[1]*feyetrim))
 
         #pdb.set_trace()
-        
         if (len(idl) != 0) & (len(idr) != 0):
-            eyes = np.vstack((reyes[idr],leyes[idl]))
+            reyes = reyes[idr]
+            leyes = leyes[idl]
+            eyes = np.vstack((reyes[idr], leyes[idl]))
+            # Sort by left to right (x axis position)
+            eyes = eyes[eyes[:,0].argsort()]
+            neyes = len(eyes)
+            #pdb.set_trace()
+            if len(eyes) > 2:
+                reyes = eyes[0:int(neyes/2.)]
+                radmax = np.argmax(reyes[0,2])
+                #pdb.set_trace()
+                reyes = reyes[radmax]
+            elif (len(eyes) > 3):
+                leyes = eyes[int(neyes/2.):]
+                radmax = np.argmax(leyes[0,2])
+                leyes = leyes[radmax]
+            else:
+                leyes = eyes[int(neyes/2.):]
+            if len(eyes) != 2:                
+                eyes = np.vstack((reyes,leyes))
+            #pdb.set_trace()
+            
         elif (len(idl) != 0) & (len(idr) == 0):
             eyes = leyes[idl]
         elif (len(idr) != 0) & (len(idl) == 0):
@@ -245,8 +268,6 @@ def idface(imgname, nofacefind):
         # Construct final eyes array with coordinates for the full image too
         #eyes_arr = [eyes_arr, eyes]
 
-        #pdb.set_trace()
-            
         for (ex,ey,ew,eh) in eyes:
             #cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
             eyefig.gca().add_artist(patches.Rectangle((ex, ey), ew, eh,
@@ -278,7 +299,7 @@ def idface(imgname, nofacefind):
     plt.imshow(cv2.cvtColor(img0, cv2.COLOR_BGR2RGB))
     plt.show()
 
-    #pdb.set_trace()
+    pdb.set_trace()
     
     for (ex,ey,ew,eh) in eyes_arr_big:
         full_fig.gca().add_artist(patches.Rectangle((ex,ey),ew,eh,fill=False,
