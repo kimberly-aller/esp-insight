@@ -26,6 +26,8 @@ np.random.seed(127)
 img_width = 24
 img_height = 24
 batch_size = 32
+nchannels = 3
+method = 'theano'
 
 #Setup directories
 train_data_dir = '/home/kikimei/Insight/esp/data/train'
@@ -34,14 +36,21 @@ nb_train_samples = 3940 #1970 total training samples
 nb_val_samples = 906 #400 total samples
 nb_epoch = 9
 
-# Get Training Data
-xtrain = np.load('../openclosed_train_nn.dat.npy')
-ytrain = np.load('../openclosed_class_train_nn.dat.npy')
+# Get Training Data +  Validation Data
+if method == 'theano':
+    xtrain = np.load('../openclosed_train_nn_th.dat.npy')
+    ytrain = np.load('../openclosed_class_train_nn_th.dat.npy')
+    xvalid = np.load('../openclosed_val_nn_th.dat.npy')
+    yvalid = np.load('../openclosed_class_val_nn_th.dat.npy')
+    outmodel = 'nn_model_final_th.keras'
 
-# Get Validation Data
-xvalid = np.load('../openclosed_val_nn.dat.npy')
-yvalid = np.load('../openclosed_class_val_nn.dat.npy')
-
+else:
+    xtrain = np.load('../openclosed_train_nn.dat.npy')
+    ytrain = np.load('../openclosed_class_train_nn.dat.npy')
+    xvalid = np.load('../openclosed_val_nn.dat.npy')
+    yvalid = np.load('../openclosed_class_val_nn.dat.npy')
+    outmodel = 'nn_model_final_tf.keras'
+    
 #rotation_range=40,
 #width_shift_range=0.2,
 #height_shift_range=0.2,
@@ -50,9 +59,14 @@ yvalid = np.load('../openclosed_class_val_nn.dat.npy')
 # + more convolutions to get down to 1
 
 model = Sequential()
-#remove border_mode=same
-model.add(Convolution2D(32, 3, 3, border_mode='same',
-                        input_shape=(img_width, img_height,3)))
+
+if method == 'theano':    
+    model.add(Convolution2D(32, 3, 3, border_mode='same',
+                            input_shape=(nchannels,img_width, img_height)))
+else:
+    model.add(Convolution2D(32, 3, 3, border_mode='same',
+                            input_shape=(img_width, img_height,nchannels)))
+
 model.add(Activation('relu'))
 # 24 -> 12
 model.add(MaxPooling2D(pool_size=(2,2), border_mode='same'))
@@ -126,19 +140,22 @@ model.fit(xtrain, ytrain,
           nb_epoch=nb_epoch)
 
 #Output model
-model.save_weights('nn_model_20epochs.h5')
+model.save(outmodel)
 
-model_json = model.to_json()
-
-pdb.set_trace()
-with open("nn_model_20epochs.json", "w") as json_file:
-    json_file.write(model_json)
+#model_json = model.to_json()
+#pdb.set_trace()
+#with open("nn_model_final.json", "w") as json_file:
+#    json_file.write(model_json)
 
 score = model.evaluate(xvalid, yvalid)
 
 print('accuracy: %.2f%%' % score[1]*100)
 
-test = np.zeros((1,24,24,3))
+if method == 'theano':
+    test = np.zeros((1,nchannels,img_width,img_height))
+else:
+    test = np.zeros((1,img_width, img_height, nchannels))
+    
 test[0] = xvalid[0]
 
 model.predict(test)

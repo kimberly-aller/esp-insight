@@ -9,17 +9,21 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 
-def eyemodel(modelname):
+def facemodel(modelname):
+    '''
+    Plot the output from the CNN running the model on the validation
+    data set.
 
+    '''
     # SETUP METHOD
     method = 'theano'
     
     #Load model from file
     if method == 'theano':
-        inmodel = 'nn_model_final_th.keras'
-        inxvalid = '../openclosed_val_nn_th.dat.npy'
-        inyvalid = '../openclosed_class_val_nn_th.dat.npy'
-        outpng = 'OpenClosedEyes_nn_hist_th.png'
+        inmodel = 'nn_model_final_face_5layers_th.keras'
+        inxvalid = '../openclosed_face_val_nn_th.dat.npy'
+        inyvalid = '../openclosed_face_val_class_nn_th.dat.npy'
+        outpng = 'OpenClosedEyes_nn_hist_face_5layers_th.png'
     else:
         inmodel = 'nn_model_final_tf.keras'
         inxvalid = '../openclosed_val_nn.dat.npy'
@@ -27,7 +31,6 @@ def eyemodel(modelname):
         outpng = 'OpenClosedEyes_nn_hist.png'
         
     model = load_model(inmodel)
-    pdb.set_trace()
         
     print('loaded eye model')
 
@@ -55,7 +58,6 @@ def eyemodel(modelname):
     outhist = plt.figure(1)
     plt.clf()
     ax = outhist.gca()
-
     # Setting threshold to remove too many false positives/negatives
     thresh = 0.2
     closedeyes = closed_ll[wclosed]
@@ -74,9 +76,10 @@ def eyemodel(modelname):
     
     outhist.gca().set_xlabel('Closed Eye Likelihood')
     outhist.gca().set_ylabel('Number')
-    plt.hist(closed_ll[wclosed], alpha=0.5, label='Closed Eyes')
-    plt.hist(closed_ll[wopen], alpha=0.5, label='Open Eyes')
-    plt.plot((thresh,thresh),(0,450), 'k-', color='crimson', linewidth=3)
+    ylims = outhist.gca().get_ylim()
+    plt.hist(closed_ll[wclosed], bins=30, alpha=0.5, label='Closed Eyes')
+    plt.hist(closed_ll[wopen], bins=30, alpha=0.5, label='Open Eyes')
+    plt.plot((thresh,thresh),(0,ylims[1]), 'k-', color='crimson', linewidth=3)
     plt.legend()
     plt.show()
     plt.savefig(outpng)

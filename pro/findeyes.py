@@ -96,7 +96,10 @@ def idface(imgname, nofacefind):
     # run thru the x,y,w,h coords
     eyes_arr = []
     eyes_arr_big = []
-    
+    faceid = 0
+
+    # ------------------------------------------------------
+    # Loop Thru all the Faces for Eyes
     for (x,y,w,h) in faces_big:
         #search within each "face"
         x2 = int(math.ceil(x+w))
@@ -277,13 +280,14 @@ def idface(imgname, nofacefind):
 
             #Check if the array already exists
             if len(eyes_arr) > 0:
-                eyes_arr = np.vstack((eyes_arr,np.array([ex,ey,ew,eh])))
-                eyes_arr_big = np.vstack((eyes_arr_big, np.array([x1+ex, y1+ey, ew, eh])))
+                eyes_arr = np.vstack((eyes_arr,np.array([ex,ey,ew,eh,faceid])))
+                eyes_arr_big = np.vstack((eyes_arr_big, np.array([x1+ex, y1+ey, ew, eh,faceid])))
             else:
-                eyes_arr = np.array([[ex,eh,ew,eh]])
-                eyes_arr_big = np.array([[x1+ex, y1+ey, ew, eh]])
+                eyes_arr = np.array([[ex,eh,ew,eh,faceid]])
+                eyes_arr_big = np.array([[x1+ex, y1+ey, ew, eh,faceid]])
 
         plt.show()
+        faceid += 1
         #pdb.set_trace()
         #plt.clf()
 
@@ -294,14 +298,13 @@ def idface(imgname, nofacefind):
 #    cv2.imwrite(imgname_ed, img0)
 
     #CV2 is BGR not RGB
-
     full_fig = plt.figure(1)
     plt.imshow(cv2.cvtColor(img0, cv2.COLOR_BGR2RGB))
     plt.show()
 
-    pdb.set_trace()
+    #pdb.set_trace()
     
-    for (ex,ey,ew,eh) in eyes_arr_big:
+    for (ex,ey,ew,eh,faceid) in eyes_arr_big:
         full_fig.gca().add_artist(patches.Rectangle((ex,ey),ew,eh,fill=False,
                                                     color='r', linewidth=3))
     plt.show()
