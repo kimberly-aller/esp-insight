@@ -23,7 +23,9 @@ def facemodel(modelname):
         inmodel = 'nn_model_final_face_5layers_th.keras'
         inxvalid = '../openclosed_face_val_nn_th.dat.npy'
         inyvalid = '../openclosed_face_val_class_nn_th.dat.npy'
-        outpng = 'OpenClosedEyes_nn_hist_face_5layers_th.png'
+        outpng = ['OpenClosedEyes_nn_hist_face_5layers_th_closed.png',
+                  'OpenClosedEyes_nn_hist_face_5layers_th_open.png',
+                  'OpenClosedEyes_nn_hist_face_5layers_th.png']
     else:
         inmodel = 'nn_model_final_tf.keras'
         inxvalid = '../openclosed_val_nn.dat.npy'
@@ -73,14 +75,44 @@ def facemodel(modelname):
 
     print('FP of %d%%' % nfp)
     print('FN of %d%%' % nfn)
+
+    bins = 10
+    xtitle = 'Blinking Likelihood'
+    ytitle = 'Number'
+    opencol = 'b'
+    closedcol = 'r'
     
-    outhist.gca().set_xlabel('Closed Eye Likelihood')
-    outhist.gca().set_ylabel('Number')
+    # Show full plot
+    ax = outhist.gca()
+    outhist.gca().set_xlabel(xtitle)
+    outhist.gca().set_ylabel(ytitle)
+    plt.hist(closed_ll[wopen], bins=bins, alpha=0.5,
+             label='Open Eyes', color=opencol)
+    plt.hist(closed_ll[wclosed], bins=bins, alpha=0.5,
+             label='Closed Eyes', color=closedcol)
     ylims = outhist.gca().get_ylim()
-    plt.hist(closed_ll[wclosed], bins=30, alpha=0.5, label='Closed Eyes')
-    plt.hist(closed_ll[wopen], bins=30, alpha=0.5, label='Open Eyes')
-    plt.plot((thresh,thresh),(0,ylims[1]), 'k-', color='crimson', linewidth=3)
+    #plt.plot((thresh,thresh),(0,ylims[1]), 'k-', color='crimson', linewidth=3)
     plt.legend()
     plt.show()
-    plt.savefig(outpng)
+    plt.savefig(outpng[2])
+
+    # Show each histogram portion separately (open/closed)
+    plt.clf()
+    outhist.gca().set_xlabel(xtitle)
+    outhist.gca().set_ylabel(ytitle)
+    outhist.gca().set_ylim(ylims)
+    plt.hist(closed_ll[wclosed], bins=bins, alpha=0.5,
+             label='Closed Eyes', color=closedcol)
+    plt.show()
+    plt.savefig(outpng[0])
+
+    plt.clf()
+    ax = outhist.gca()
+    outhist.gca().set_xlabel(xtitle)
+    outhist.gca().set_ylabel(ytitle)
+    plt.hist(closed_ll[wopen], bins=bins, alpha=0.5,
+             label='Open Eyes', color=opencol)
+    plt.show()
+    plt.savefig(outpng[1])
+
     pdb.set_trace()
